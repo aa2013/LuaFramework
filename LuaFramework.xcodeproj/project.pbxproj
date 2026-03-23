@@ -6,6 +6,22 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		8442D0192F71704B000AA9B9 /* lua_public */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 8442D01A2F71704B000AA9B9 /* Build configuration list for PBXAggregateTarget "lua_public" */;
+			buildPhases = (
+				8442D01D2F717060000AA9B9 /* Run Script */,
+			);
+			dependencies = (
+			);
+			name = lua_public;
+			packageProductDependencies = (
+			);
+			productName = lua_public;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXFileReference section */
 		8442CE9A2F716955000AA9B9 /* LuaFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LuaFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -14,7 +30,11 @@
 		8442CE9F2F716955000AA9B9 /* Exceptions for "LuaFramework" folder in "LuaFramework" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
-				LuaFramework.h,
+				lauxlib.h,
+				lua.h,
+				luaconf.h,
+				LuaFramework.hpp,
+				lualib.h,
 			);
 			target = 8442CE992F716955000AA9B9 /* LuaFramework */;
 		};
@@ -106,6 +126,9 @@
 					8442CE992F716955000AA9B9 = {
 						CreatedOnToolsVersion = 16.2;
 					};
+					8442D0192F71704B000AA9B9 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 				};
 			};
 			buildConfigurationList = 8442CE942F716955000AA9B9 /* Build configuration list for PBXProject "LuaFramework" */;
@@ -123,6 +146,7 @@
 			projectRoot = "";
 			targets = (
 				8442CE992F716955000AA9B9 /* LuaFramework */,
+				8442D0192F71704B000AA9B9 /* lua_public */,
 			);
 		};
 /* End PBXProject section */
@@ -136,6 +160,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8442D01D2F717060000AA9B9 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#设置编译的target\ntargetName=\"LuaFramework\"\n#设置生成的framework的名称\nframeworkName=${targetName}\n#模拟器版本编译产物路径\nsimultorArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphonesimulator.xcarchive\"\n#真机版本编译产物路径\ndeviceArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphoneos.xcarchive\"\n#存储编译后产物的存储路径\noutput=${SRCROOT}/Products\n\n#删除上次编译后的产物\nrm -rf \"${output}\"\n\n#编译模拟器版本\nxcodebuild archive \\\n -scheme ${targetName} \\\n -archivePath ${simultorArchivePath} \\\n -sdk iphonesimulator \\\n SKIP_INSTALL=NO \\\n BUILD_LIBRARIES_FOR_DISTRIBUTION=YES\n\n#编译真机版本\nxcodebuild archive \\\n -scheme ${targetName} \\\n -archivePath ${deviceArchivePath} \\\n -sdk iphoneos \\\n SKIP_INSTALL=NO \\\n BUILD_LIBRARIES_FOR_DISTRIBUTION=YES\n\n#合并真机和模拟器版本,生成xcframework\nxcodebuild -create-xcframework \\\n -framework ${simultorArchivePath}/Products/Library/Frameworks/${frameworkName}.framework \\\n -framework ${deviceArchivePath}/Products/Library/Frameworks/${frameworkName}.framework \\\n -output ${output}/${frameworkName}.xcframework\n\n#打开编译后产物路径\nopen ${output}\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8442CE962F716955000AA9B9 /* Sources */ = {
@@ -153,6 +198,7 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -161,10 +207,15 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					LUA_USE_IOS,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
@@ -181,11 +232,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
@@ -195,6 +247,7 @@
 			buildSettings = {
 				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -203,10 +256,12 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = LUA_USE_IOS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
@@ -223,11 +278,12 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
@@ -352,6 +408,26 @@
 			};
 			name = Release;
 		};
+		8442D01B2F71704B000AA9B9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5JRSN4WS4P;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		8442D01C2F71704B000AA9B9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5JRSN4WS4P;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -369,6 +445,15 @@
 			buildConfigurations = (
 				8442CEA12F716955000AA9B9 /* Debug */,
 				8442CEA22F716955000AA9B9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8442D01A2F71704B000AA9B9 /* Build configuration list for PBXAggregateTarget "lua_public" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8442D01B2F71704B000AA9B9 /* Debug */,
+				8442D01C2F71704B000AA9B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

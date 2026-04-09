@@ -21,11 +21,12 @@ jobs:
 
       - name: Build lua_public aggregate target
         run: |
+          # Aggregate targets only support macOS destinations in CI;
+          # do not pass iOS destination specifiers here.
           xcodebuild \
             -project LuaFramework.xcodeproj \
             -scheme lua_public \
             -configuration Release \
-            -destination 'generic/platform=iOS' \
             build
 
       - name: Validate generated XCFramework

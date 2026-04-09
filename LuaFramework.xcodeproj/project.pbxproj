@@ -178,7 +178,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#设置编译的target\ntargetName=\"LuaFramework\"\n#设置生成的framework的名称\nframeworkName=${targetName}\n#模拟器版本编译产物路径\nsimultorArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphonesimulator.xcarchive\"\n#真机版本编译产物路径\ndeviceArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphoneos.xcarchive\"\n#存储编译后产物的存储路径\noutput=${SRCROOT}/Products\n\n#删除上次编译后的产物\nrm -rf \"${output}\"\n\n#编译模拟器版本\nxcodebuild archive \\\n -scheme ${targetName} \\\n -archivePath ${simultorArchivePath} \\\n -sdk iphonesimulator \\\n SKIP_INSTALL=NO \\\n BUILD_LIBRARIES_FOR_DISTRIBUTION=YES\n\n#编译真机版本\nxcodebuild archive \\\n -scheme ${targetName} \\\n -archivePath ${deviceArchivePath} \\\n -sdk iphoneos \\\n SKIP_INSTALL=NO \\\n BUILD_LIBRARIES_FOR_DISTRIBUTION=YES\n\n#合并真机和模拟器版本,生成xcframework\nxcodebuild -create-xcframework \\\n -framework ${simultorArchivePath}/Products/Library/Frameworks/${frameworkName}.framework \\\n -framework ${deviceArchivePath}/Products/Library/Frameworks/${frameworkName}.framework \\\n -output ${output}/${frameworkName}.xcframework\n\n#打开编译后产物路径\nopen ${output}\n";
+			shellScript = "#设置编译的target
+targetName=\"LuaFramework\"
+#设置生成的framework的名称
+frameworkName=${targetName}
+#模拟器版本编译产物路径
+simultorArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphonesimulator.xcarchive\"
+#真机版本编译产物路径
+deviceArchivePath=\"${BUILD_DIR}/${CONFIGURATION}/${frameworkName}-iphoneos.xcarchive\"
+#存储编译后产物的存储路径
+output=${SRCROOT}/Products
+
+#删除上次编译后的产物
+rm -rf \"${output}\"
+
+#编译模拟器版本(关闭签名,适配CI环境)
+xcodebuild archive -scheme ${targetName} -archivePath ${simultorArchivePath} -sdk iphonesimulator SKIP_INSTALL=NO BUILD_LIBRARIES_FOR_DISTRIBUTION=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+#编译真机版本(关闭签名,适配CI环境)
+xcodebuild archive -scheme ${targetName} -archivePath ${deviceArchivePath} -sdk iphoneos SKIP_INSTALL=NO BUILD_LIBRARIES_FOR_DISTRIBUTION=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+#合并真机和模拟器版本,生成xcframework
+xcodebuild -create-xcframework -framework ${simultorArchivePath}/Products/Library/Frameworks/${frameworkName}.framework -framework ${deviceArchivePath}/Products/Library/Frameworks/${frameworkName}.framework -output ${output}/${frameworkName}.xcframework
+
+#打开编译后产物路径(本地调试时自动打开,CI中跳过)
+if [ -z \"${CI}\" ]; then
+ open ${output}
+fi
+";
 		};
 /* End PBXShellScriptBuildPhase section */
 

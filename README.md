@@ -4,6 +4,12 @@ Select the `lua_public` TARGET and click run to compile. After compilation succe
 
 [Reference article](https://zhuanlan.zhihu.com/p/677506571)
 
+
+For Android, please refer to [android-lua-lib](https://github.com/aa2013/android-lua-lib)
+
+For macOS, please refer to: [mac-lua-dylib](https://github.com/aa2013/mac-lua-lib)
+
+
 ## CI
 
 This repository includes a GitHub Actions workflow:
